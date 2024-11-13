@@ -5,6 +5,7 @@ import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Canvas;
@@ -89,6 +90,7 @@ public class GuideView extends FrameLayout {
     private DismissType dismissType;
     private PointerType pointerType;
     private final GuideMessageView mMessageView;
+    private String id;
 
     private GuideView(Context context, View view) {
         super(context);
@@ -429,6 +431,12 @@ public class GuideView extends FrameLayout {
     }
 
     public void show() {
+        Activity activity = (Activity) getContext();
+        SharedPreferences sharedPref = activity.getPreferences(Context.MODE_PRIVATE);
+        boolean isShown = sharedPref.getBoolean(id, false);
+        if (isShown) {
+            return;
+        }
         this.setLayoutParams(new ViewGroup.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT
@@ -440,10 +448,20 @@ public class GuideView extends FrameLayout {
         startAnimation.setFillAfter(true);
         this.startAnimation(startAnimation);
         mIsShowing = true;
+        if (id == null) {
+            return;
+        }
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putBoolean(id, true);
+        editor.apply();
     }
 
     public void setTitle(String str) {
         mMessageView.setTitle(str);
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public void setContentText(String str) {
@@ -473,7 +491,7 @@ public class GuideView extends FrameLayout {
     public static class Builder {
 
         private View targetView;
-        private String title, contentText;
+        private String title, contentText, id;
         private Gravity gravity;
         private DismissType dismissType;
         private PointerType pointerType;
@@ -515,6 +533,17 @@ public class GuideView extends FrameLayout {
          **/
         public Builder setTitle(String title) {
             this.title = title;
+            return this;
+        }
+
+        /**
+         * defining a id
+         * make sure that the id is unique to avoid showing multiple same guide view
+         *
+         * @param id a id. for example: submit button.
+         **/
+        public Builder setId(String id) {
+            this.id = id;
             return this;
         }
 
@@ -668,6 +697,7 @@ public class GuideView extends FrameLayout {
             float density = context.getResources().getDisplayMetrics().density;
 
             guideView.setTitle(title);
+            guideView.setId(id);
             if (contentText != null) {
                 guideView.setContentText(contentText);
             }

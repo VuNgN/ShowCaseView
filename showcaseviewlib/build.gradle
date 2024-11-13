@@ -1,19 +1,17 @@
 apply plugin: 'com.android.library'
-apply plugin: 'com.github.dcendents.android-maven'
-group='com.github.mreram'
+apply plugin: 'maven-publish'
+
 android {
-    compileSdkVersion 30
-
-
+    compileSdkVersion 26
+    buildToolsVersion '27.0.3'
 
     defaultConfig {
-        minSdkVersion 11
-        targetSdkVersion 30
-        versionCode 3
-        versionName "1.4.1"
+        minSdkVersion 14
+        targetSdkVersion 26
+        versionCode 1
+        versionName "1.0"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-
     }
 
     buildTypes {
@@ -22,14 +20,14 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-
 }
+
 
 task makeShowCaseView(type: Copy) {
     from('build/intermediates/bundles/release/')
     into('build/outputs/')
     include('classes.jar')
-    rename ('classes.jar', 'showCaseViewLib.jar')
+    rename('classes.jar', 'showCaseViewLib.jar')
     into('release/') //you can change this directory where you want to copy your .jar
 }
 task clearJar(type: Delete) {
@@ -39,6 +37,18 @@ makeShowCaseView.dependsOn(clearJar, build)
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+}
 
+publishing {
+    publications {
+        release(MavenPublication) {
+            groupId = 'com.github.vungn'
+            artifactId = 'ShowCaseView'
+            version = '1.0.0'
 
+            afterEvaluate {
+                from components.release
+            }
+        }
+    }
 }
